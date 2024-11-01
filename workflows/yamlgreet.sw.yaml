@@ -17,17 +17,17 @@ functions:
     operation: '{
         result: {
           "completedWith":"success",
-          "message": "The workflow ${{ values.workflowId }} completed successfully",
+          "message": "The workflow FOOOOO completed successfully",
           "outputs":[
             {
               "key": "Validated Result",
-              "value": .validatedResult
+              "value": "My validated result"
             }
           ],
           "nextWorkflows":[
             {
-                "id": .executeResult.currentVersion.id,
-                "name": .executeResult.currentVersion.name
+                "id": "this-is-an-id",
+                "name": "an foo id"
             }
           ]
         }
@@ -37,11 +37,11 @@ functions:
     operation: '{
         result: {
           "completedWith":"error",
-          "message": "The workflow ${{ values.workflowId }} completed with error",
+          "message": "The workflow BAAAAAR completed with error",
           "outputs":[
             {
               "key": "Missing Workflows",
-              "value": (.missingWorkflows | join(","))
+              "value": "missingWorkflowA,missingWorkflowB"
             }
           ],
           "nextWorkflows":[]
@@ -84,11 +84,11 @@ states:
     data:
       greeting: 'Hello from YAML Workflow, '
     transition: GreetPerson
-  - name: GreetInSpanish
-    type: inject
-    data:
-      greeting: 'Saludos desde YAML Workflow, '
-    transition: GreetPerson
+  # - name: GreetInSpanish
+  #   type: inject
+  #   data:
+  #     greeting: 'Saludos desde YAML Workflow, '
+  #   transition: GreetPerson
   - name: GreetPerson
     type: operation
     actions:
