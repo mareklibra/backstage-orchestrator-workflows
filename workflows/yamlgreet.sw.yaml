@@ -9,16 +9,76 @@ functions:
   - name: greetFunction
     type: custom
     operation: sysout
+  - name: logOutput
+    type: custom
+    operation: "sysout:INFO"    
+  - name: assessmentResult
+    type: expression
+    operation: '{
+        result: {
+          "completedWith":"success",
+          "message": "The workflow ${{ values.workflowId }} completed successfully",
+          "outputs":[
+            {
+              "key": "Validated Result",
+              "value": .validatedResult
+            }
+          ],
+          "nextWorkflows":[
+            {
+                "id": .executeResult.currentVersion.id,
+                "name": .executeResult.currentVersion.name
+            }
+          ]
+        }
+      }'
+  - name: errorAssessmentResult
+    type: expression
+    operation: '{
+        result: {
+          "completedWith":"error",
+          "message": "The workflow ${{ values.workflowId }} completed with error",
+          "outputs":[
+            {
+              "key": "Missing Workflows",
+              "value": (.missingWorkflows | join(","))
+            }
+          ],
+          "nextWorkflows":[]
+        }
+      }'    
 states:
   - name: ChooseOnLanguage
     type: switch
     dataConditions:
       - condition: ${ .language == "English" }
-        transition: GreetInEnglish
+        transition: reportNoError
       - condition: ${ .language == "Spanish" }
-        transition: GreetInSpanish
+        transition: reportFailure
     defaultCondition:
       transition: GreetInEnglish
+  - name: reportNoError
+    type: operation
+    actions:
+      - name: reportNoError
+        functionRef:
+          refName: assessmentResult
+    transition: printAction
+  - name: reportFailure
+    type: operation
+    actions:
+      - name: reportFailure
+        functionRef:
+          refName: errorAssessmentResult
+    transition: printAction    
+  - name: printAction
+    type: operation
+    actions:
+      - functionRef:
+          refName: logOutput
+          arguments:
+            message: ".result"
+    end: true           
   - name: GreetInEnglish
     type: inject
     data:
